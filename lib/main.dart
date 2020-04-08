@@ -44,6 +44,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final List<Transaction> _transactions = [];
+  bool _showCart = false;
 
   List<Transaction> get _recentTransactions {
     return _transactions.where((tr) {
@@ -81,22 +82,65 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+
+    bool isLandScape = MediaQuery.of(context).orientation == Orientation.landscape;
+
+    final appBar = AppBar(
+      title: Text('Despesas Pessoais'),
+      actions: <Widget>[
+        if(isLandScape)
+        IconButton(
+          onPressed: () {
+            setState(() {
+              _showCart = !_showCart;
+            });
+          },
+          icon: Icon(_showCart ? Icons.list : Icons.show_chart),          
+        ),
+        IconButton(
+          onPressed: () => _openTransactionFormModal(context),
+          icon: Icon(Icons.add),
+        )        
+      ],
+    );    
+
+    final avalaibleHieght = MediaQuery.of(context).size.height -
+        appBar.preferredSize.height -
+        MediaQuery.of(context).padding.top;
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Despesas Pessoais'),
-        actions: <Widget>[
-          IconButton(
-            onPressed: () => _openTransactionFormModal(context),
-            icon: Icon(Icons.add),
-          )
-        ],
-      ),
+      appBar: appBar,
       body: SingleChildScrollView(
         child: Center(
           child: Column(
             children: <Widget>[
-              Chart(_recentTransactions),
-              TransactionList(_transactions, _removeTransaction),
+              // if(isLandScape)
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.center,
+              //   children: <Widget>[
+              //     FittedBox(
+              //       child: Text("Exibir Gráfico"),
+              //     ),
+              //     Switch(                  
+              //       value: _showCart,
+              //       onChanged: (_) {
+              //         setState(() {
+              //           _showCart = !_showCart;
+              //         });
+              //       },
+              //     )
+              //   ],
+              // ),
+              if(_showCart || !isLandScape)
+              Container(
+                height: avalaibleHieght * (_showCart ? 0.7 : 0.25),
+                child: Chart(_recentTransactions),
+              ),
+              if(!_showCart  || !isLandScape)
+              Container(
+                height: avalaibleHieght * 0.75,
+                child: TransactionList(_transactions, _removeTransaction),
+              ),
             ],
           ),
         ),
