@@ -1,5 +1,8 @@
+import 'package:expenses/components/adaptative_datePicker.dart';
+import 'package:expenses/components/adaptative_textField.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import './adaptative_button.dart';
 
 class TransactionForm extends StatefulWidget {
   final void Function(String title, double value, DateTime date) onSubmit;
@@ -19,7 +22,7 @@ class _TransactionFormState extends State<TransactionForm> {
 
   _onSubmitForm() {
     final value = double.tryParse(valueController.text) ?? 0.0;
-    final title = valueController.text;
+    final title = titleController.text;
 
     if (value <= 0 || title.isEmpty || _selectedDate == null) {
       return;
@@ -28,66 +31,49 @@ class _TransactionFormState extends State<TransactionForm> {
     widget.onSubmit(title, value, _selectedDate);
   }
 
-  _showDatePicker() {
-    showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2019),
-      lastDate: DateTime.now(),
-    ).then((pickedDate) {
-      if(pickedDate == null) {
-        return;
-      }
-      
-      setState(() {
-        _selectedDate = pickedDate;
-      });
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: Column(
-          children: <Widget>[
-            TextField(
-              decoration: InputDecoration(labelText: 'Título'),
-              controller: titleController,
-              onSubmitted: (_) => _onSubmitForm(),
-            ),
-            TextField(
-              decoration: InputDecoration(labelText: 'Valor'),
-              controller: valueController,
-              keyboardType: TextInputType.numberWithOptions(decimal: true),
-              onSubmitted: (_) => _onSubmitForm(),
-            ),
-            Container(
-              height: 70,
-              child: Row(
+    return SingleChildScrollView(
+      child: Card(
+        child: Padding(
+          padding: EdgeInsets.only(
+            top: 10,
+            left: 10,
+            right: 10,
+            bottom: 10 + (MediaQuery.of(context).viewInsets.bottom),
+          ),
+          child: Column(
+            children: <Widget>[
+              AdaptativeTextField(
+                label: 'Título',
+                controller: titleController,
+                onSubmitted: (_) => _onSubmitForm(),
+              ),
+              AdaptativeTextField(
+                label: 'Valor',
+                controller: valueController,
+                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                onSubmitted: (_) => _onSubmitForm(),
+              ),                          
+              AdaptativeDatePicker(
+                onDateChange: (newDate) {
+                  setState(() {
+                    _selectedDate = newDate;
+                  });
+                },
+                selectedDate: _selectedDate,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: <Widget>[
-                  Expanded(child: Text(_selectedDate != null ? "Data Selecionada: ${DateFormat('dd/MM/y').format(_selectedDate)}" : "Nenhuma data selecionada")),
-                  FlatButton(
-                    onPressed: _showDatePicker,
-                    child: Text(_selectedDate == null ? "Selecionar Data" : "Alterar Data"),
-                    textColor: Theme.of(context).primaryColor,
+                  AdaptativeButton(
+                    label: 'Nova Transação',
+                    onPressed: _onSubmitForm,
                   )
                 ],
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: <Widget>[
-                RaisedButton(
-                  onPressed: _onSubmitForm,
-                  child: Text('Nova Transação'),
-                  color: Theme.of(context).primaryColor,
-                  textColor: Theme.of(context).textTheme.button.color,
-                )
-              ],
-            )
-          ],
+              )
+            ],
+          ),
         ),
       ),
     );
